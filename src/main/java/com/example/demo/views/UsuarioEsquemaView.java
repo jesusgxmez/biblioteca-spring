@@ -1,5 +1,6 @@
 package com.example.demo.views;
 
+import com.example.demo.entities.PerfilEsquema;
 import com.example.demo.entities.UsuarioEsquema;
 import com.example.demo.services.UsuarioEsquemaService;
 import com.example.demo.security.SecurityService;
@@ -11,9 +12,11 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.*;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.PageTitle;
 import jakarta.annotation.security.PermitAll;
 
 @Route(value = "perfil", layout = MainLayout.class)
+@PageTitle("Mi Perfil | ReaderApp")
 @PermitAll
 public class UsuarioEsquemaView extends VerticalLayout {
 
@@ -25,35 +28,61 @@ public class UsuarioEsquemaView extends VerticalLayout {
         setPadding(true);
         setSpacing(true);
 
-        // --- IMAGEN AJUSTADA ---
-        Image avatar = new Image("https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" + username, "User Icon");
-        avatar.setWidth("150px");  // Tamaño fijo de ancho
-        avatar.setHeight("150px"); // Tamaño fijo de alto
-        avatar.getStyle().set("border-radius", "50%"); // La hace redonda
-        avatar.getStyle().set("border", "2px solid #ccc");
+        // --- DISEÑO AVATAR ---
+        Image avatar = new Image("https://api.dicebear.com/7.x/avataaars/svg?seed=" + username, "User Icon");
+        avatar.setWidth("150px");
+        avatar.setHeight("150px");
+        avatar.getStyle().set("border-radius", "50%").set("border", "4px solid #007bff").set("background", "#f0f0f0");
 
-        H2 titulo = new H2("Configuración de Perfil");
+        H2 titulo = new H2("Mi Perfil de Lector");
 
+        // --- CAMPOS ---
         TextField nombre = new TextField("Nombre de usuario");
         nombre.setValue(user.getNombre());
         nombre.setReadOnly(true);
         nombre.setWidth("350px");
 
-        TextField email = new TextField("Correo electrónico");
-        email.setValue(user.getEmail());
+        EmailField email = new EmailField("Correo electrónico");
+        email.setValue(user.getEmail() != null ? user.getEmail() : "");
         email.setWidth("350px");
 
-        TextArea bio = new TextArea("Biografía del lector");
-        bio.setPlaceholder("Cuéntanos qué te gusta leer...");
-        bio.setWidth("350px");
-        bio.setHeight("120px");
+        TextArea bioArea = new TextArea("Biografía");
 
-        Button btnGuardar = new Button("Actualizar Datos", VaadinIcon.SAFE.create(), e -> {
-            // Aquí deberías llamar a tu servicio para guardar si quieres persistir la Bio o el Email
-            Notification.show("Perfil guardado con éxito");
+        // RELACIÓN: Sacamos la bio del perfil vinculado
+        if (user.getPerfil() != null) {
+            bioArea.setValue(user.getPerfil().getBio() != null ? user.getPerfil().getBio() : "");
+        } else {
+            bioArea.setPlaceholder("Aún no tienes biografía. ¡Escribe algo!");
+        }
+
+        bioArea.setWidth("350px");
+        bioArea.setHeight("150px");
+
+        // --- BOTÓN GUARDAR CON LÓGICA DE RELACIÓN ---
+        Button btnGuardar = new Button("Guardar Cambios", VaadinIcon.CHECK_CIRCLE.create(), e -> {
+            try {
+                // 1. Actualizamos el email del usuario
+                user.setEmail(email.getValue());
+
+                // 2. Manejamos la relación OneToOne con el Perfil
+                PerfilEsquema perfil = user.getPerfil();
+                if (perfil == null) {
+                    perfil = new PerfilEsquema();
+                    perfil.setUsuario(user);
+                    user.setPerfil(perfil);
+                }
+                perfil.setBio(bioArea.getValue());
+
+                // 3. Persistimos (el CascadeType.ALL en el Usuario debería guardar el perfil)
+                usuarioService.save(user);
+
+                Notification.show("¡Perfil actualizado correctamente!");
+            } catch (Exception ex) {
+                Notification.show("Error al guardar: " + ex.getMessage(), 3000, Notification.Position.MIDDLE);
+            }
         });
-        btnGuardar.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        btnGuardar.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_LARGE);
 
-        add(avatar, titulo, nombre, email, bio, btnGuardar);
+        add(avatar, titulo, nombre, email, bioArea, btnGuardar);
     }
 }

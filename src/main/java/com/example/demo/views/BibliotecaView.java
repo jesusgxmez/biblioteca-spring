@@ -10,67 +10,66 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.*;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.PageTitle;
 import jakarta.annotation.security.PermitAll;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Route(value = "biblioteca", layout = MainLayout.class)
+@Route(value = "", layout = MainLayout.class)
+@PageTitle("Biblioteca Pública")
 @PermitAll
 public class BibliotecaView extends VerticalLayout {
 
     private final LibroEsquemaService libroService;
     private final UsuarioEsquemaService usuarioService;
-    private final CategoriaEsquemaService categoriaService;
     private final String username;
 
     private final FlexLayout contenedorCards = new FlexLayout();
-    private final TextField buscador = new TextField();
-    private final ComboBox<CategoriaEsquema> filtroCategoria = new ComboBox<>();
+    private final TextField buscador = new TextField("Buscar por título o autor");
+    private final ComboBox<CategoriaEsquema> filtroCategoria = new ComboBox<>("Filtrar por categoría");
 
-    public BibliotecaView(LibroEsquemaService libroService, UsuarioEsquemaService usuarioService,
-                          CategoriaEsquemaService categoriaService, SecurityService securityService) {
+    public BibliotecaView(LibroEsquemaService libroService,
+                          UsuarioEsquemaService usuarioService,
+                          CategoriaEsquemaService categoriaService,
+                          SecurityService securityService) {
         this.libroService = libroService;
         this.usuarioService = usuarioService;
-        this.categoriaService = categoriaService;
         this.username = securityService.getAuthenticatedUsername();
 
         setAlignItems(Alignment.CENTER);
         setPadding(true);
 
-        // --- BARRA DE FILTROS ---
-        HorizontalLayout barraFiltros = new HorizontalLayout();
-        barraFiltros.setWidthFull();
-        barraFiltros.setMaxWidth("900px");
-        barraFiltros.setJustifyContentMode(JustifyContentMode.CENTER);
-        barraFiltros.getStyle().set("margin-bottom", "20px");
+        // --- FILTROS ---
+        HorizontalLayout filtros = new HorizontalLayout();
+        filtros.setWidthFull();
+        filtros.setMaxWidth("1100px");
+        filtros.setAlignItems(Alignment.BASELINE);
 
-        buscador.setPlaceholder("Buscar por título o autor...");
-        buscador.setPrefixComponent(VaadinIcon.SEARCH.create());
+        buscador.setPlaceholder("Escribe algo...");
         buscador.setClearButtonVisible(true);
-        buscador.setWidth("400px");
-        // Filtra mientras escribes
-        buscador.setValueChangeMode(ValueChangeMode.LAZY);
+        buscador.setPrefixComponent(VaadinIcon.SEARCH.create());
         buscador.addValueChangeListener(e -> actualizarCatalogo());
 
-        filtroCategoria.setPlaceholder("Todas las categorías");
         filtroCategoria.setItems(categoriaService.findAll());
         filtroCategoria.setItemLabelGenerator(CategoriaEsquema::getCategoria);
+        filtroCategoria.setPlaceholder("Todas");
         filtroCategoria.setClearButtonVisible(true);
         filtroCategoria.addValueChangeListener(e -> actualizarCatalogo());
 
-        barraFiltros.add(buscador, filtroCategoria);
+        filtros.add(buscador, filtroCategoria);
+        filtros.expand(buscador);
 
-        // --- CONTENEDOR DE CARDS ---
+        // --- CONTENEDOR FLEX (Ajustado para 4 por fila) ---
         contenedorCards.setWidthFull();
+        contenedorCards.setMaxWidth("1300px"); // Aumentado para dar aire a las 4 columnas
         contenedorCards.setFlexWrap(FlexLayout.FlexWrap.WRAP);
-        contenedorCards.setJustifyContentMode(JustifyContentMode.CENTER);
         contenedorCards.getStyle().set("gap", "25px");
+        contenedorCards.setJustifyContentMode(JustifyContentMode.CENTER);
 
-        add(new H2("Catálogo de Libros"), barraFiltros, contenedorCards);
+        add(new H2("Explorar Biblioteca"), filtros, contenedorCards);
         actualizarCatalogo();
     }
 
@@ -78,7 +77,6 @@ public class BibliotecaView extends VerticalLayout {
         contenedorCards.removeAll();
         List<LibroEsquema> todos = libroService.findAll();
 
-        // 1. Títulos que ya tiene el usuario para ocultarlos
         Set<String> misTitulos = todos.stream()
                 .filter(l -> l.getUsuario() != null && l.getUsuario().getNombre().equalsIgnoreCase(username))
                 .map(l -> l.getTitulo().toLowerCase().trim())
@@ -88,85 +86,93 @@ public class BibliotecaView extends VerticalLayout {
         CategoriaEsquema catSeleccionada = filtroCategoria.getValue();
 
         todos.stream()
-                .filter(l -> l.getUsuario() == null) // Solo catálogo público
-                .filter(l -> !misTitulos.contains(l.getTitulo().toLowerCase().trim())) // Evitar duplicados
+                .filter(l -> l.getUsuario() == null)
+                .filter(l -> !misTitulos.contains(l.getTitulo().toLowerCase().trim()))
                 .filter(l -> {
-                    // FILTRO DE TEXTO (Título o Autor)
                     boolean coincideTexto = textoBusqueda.isEmpty() ||
                             l.getTitulo().toLowerCase().contains(textoBusqueda) ||
                             l.getAutor().toLowerCase().contains(textoBusqueda);
 
-                    // FILTRO DE CATEGORÍA (Comparamos por ID para que sea infalible)
-                    boolean coincideCat = true;
-                    if (catSeleccionada != null) {
-                        coincideCat = l.getCategorias().stream()
-                                .anyMatch(c -> c.getId().equals(catSeleccionada.getId()));
-                    }
+                    boolean coincideCat = (catSeleccionada == null) ||
+                            l.getCategorias().stream().anyMatch(c -> c.getId().equals(catSeleccionada.getId()));
 
                     return coincideTexto && coincideCat;
                 })
-                .forEach(libro -> contenedorCards.add(crearCard(libro)));
-
-        // Mensaje si no hay nada que mostrar
-        if (contenedorCards.getComponentCount() == 0) {
-            Span mensaje = new Span("No hay libros que coincidan con la búsqueda.");
-            mensaje.getStyle().set("color", "gray").set("margin-top", "20px");
-            contenedorCards.add(mensaje);
-        }
+                .forEach(libro -> contenedorCards.add(crearCardVerticalGrande(libro)));
     }
 
-    private VerticalLayout crearCard(LibroEsquema libro) {
-        // ... (El código de crearCard es el mismo que ya tenías, funciona perfecto) ...
+    private VerticalLayout crearCardVerticalGrande(LibroEsquema libro) {
         VerticalLayout card = new VerticalLayout();
-        card.setWidth("240px");
+        card.setWidth("250px"); // Ajustado de 280 a 250 para que entren 4
         card.getStyle()
                 .set("background", "white")
-                .set("border-radius", "15px")
-                .set("box-shadow", "0 10px 20px rgba(0,0,0,0.12)")
-                .set("overflow", "hidden")
-                .set("padding", "0")
-                .set("border", "1px solid #eee");
+                .set("border-radius", "20px")
+                .set("box-shadow", "0 10px 25px rgba(0,0,0,0.1)")
+                .set("padding", "15px")
+                .set("transition", "transform 0.3s ease");
 
-        Image portada = new Image(libro.getImagenUrl(), "Portada");
-        portada.setWidthFull();
-        portada.setHeight("300px");
-        portada.getStyle().set("object-fit", "cover");
+        // Imagen tipo Póster
+        Image img = new Image(libro.getImagenUrl(), "Portada");
+        img.setWidthFull();
+        img.setHeight("340px"); // Ajustado proporcionalmente
+        img.getStyle().set("object-fit", "cover").set("border-radius", "15px");
 
-        VerticalLayout cuerpo = new VerticalLayout();
-        cuerpo.setPadding(true);
-        cuerpo.setSpacing(false);
-
+        // Información abajo
         Span titulo = new Span(libro.getTitulo());
-        titulo.getStyle().set("font-weight", "bold").set("font-size", "1.1em");
+        titulo.getStyle()
+                .set("font-weight", "bold")
+                .set("font-size", "1.1em") // Un pelín más pequeña para que no rompa en 250px
+                .set("text-align", "center")
+                .set("margin-top", "10px")
+                .set("height", "2.4em")
+                .set("overflow", "hidden");
 
         Span autor = new Span(libro.getAutor());
-        autor.getStyle().set("color", "#555").set("font-size", "0.9em");
+        autor.getStyle().set("color", "gray").set("font-size", "0.9em");
 
-        HorizontalLayout badges = new HorizontalLayout();
+        // Categorías
+        HorizontalLayout listaCategorias = new HorizontalLayout();
+        listaCategorias.setJustifyContentMode(JustifyContentMode.CENTER);
         libro.getCategorias().forEach(c -> {
-            Span b = new Span(c.getCategoria());
-            b.getStyle().set("background", "#e1f5fe").set("color", "#0288d1").set("font-size", "0.7em")
-                    .set("padding", "2px 8px").set("border-radius", "10px").set("font-weight", "bold");
-            badges.add(b);
+            Span badge = new Span(c.getCategoria());
+            badge.getStyle()
+                    .set("background-color", "#e7f3ff")
+                    .set("color", "#007bff")
+                    .set("padding", "2px 8px")
+                    .set("border-radius", "10px")
+                    .set("font-size", "0.7em")
+                    .set("font-weight", "600");
+            listaCategorias.add(badge);
         });
 
-        Button btnAdd = new Button("Añadir", VaadinIcon.HEART.create(), e -> {
+        Span pags = new Span(VaadinIcon.BOOK.create());
+        pags.add(new Span(" " + libro.getPaginasTotales() + " pág."));
+        pags.getStyle().set("font-size", "0.8em").set("color", "#555");
+
+        Button añadirBtn = new Button("Añadir", VaadinIcon.HEART.create(), e -> {
             UsuarioEsquema yo = usuarioService.buscarPorNombre(username).get(0);
             LibroEsquema copia = new LibroEsquema();
             copia.setTitulo(libro.getTitulo());
             copia.setAutor(libro.getAutor());
             copia.setImagenUrl(libro.getImagenUrl());
             copia.setUsuario(yo);
+            copia.setPaginasTotales(libro.getPaginasTotales());
+            copia.setPaginasLeidas(0);
             copia.setCategorias(new ArrayList<>(libro.getCategorias()));
+
             libroService.save(copia);
-            Notification.show("¡Añadido!");
+            Notification.show("¡Guardado!");
             actualizarCatalogo();
         });
-        btnAdd.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        btnAdd.setWidthFull();
+        añadirBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        añadirBtn.setWidthFull();
 
-        cuerpo.add(titulo, autor, badges, btnAdd);
-        card.add(portada, cuerpo);
+        card.add(img, titulo, autor, listaCategorias, pags, añadirBtn);
+        card.setAlignItems(Alignment.CENTER);
+
+        card.getElement().addEventListener("mouseenter", e -> card.getStyle().set("transform", "scale(1.03)"));
+        card.getElement().addEventListener("mouseleave", e -> card.getStyle().set("transform", "scale(1.0)"));
+
         return card;
     }
 }

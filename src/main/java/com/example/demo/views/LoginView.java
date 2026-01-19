@@ -1,44 +1,75 @@
 package com.example.demo.views;
 
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.login.LoginForm;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.login.LoginI18n;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 @Route("login")
 @PageTitle("Login | Biblioteca")
-@AnonymousAllowed // Importante para que te deje ver esta pantalla sin estar logueado
-public class LoginView extends VerticalLayout { // Cambiado de AppLayout a VerticalLayout
+@AnonymousAllowed
+public class LoginView extends VerticalLayout implements BeforeEnterObserver {
+
+    private final LoginForm login = new LoginForm();
 
     public LoginView() {
-        // Configuramos el layout principal
         setSizeFull();
         setAlignItems(Alignment.CENTER);
         setJustifyContentMode(JustifyContentMode.CENTER);
-        getStyle().set("background-color", "#f8f9fa");
 
-        // 1. Cabecera (similar a lo que tenías)
-        H1 logo = new H1("BIBLIOTECA PERSONAL");
-        logo.getStyle().set("color", "#2c3e50");
+        // --- TU FONDO (SIN TOCAR) ---
+        getStyle().set("background-image", "url('https://img2.wallspic.com/previews/2/2/1/5/3/135122/135122-estantes_de_libros_de_madera_marron_con_luces_encendidas_en_la_habitacion-x750.jpg')");
+        getStyle().set("background-size", "cover");
+        getStyle().set("background-position", "center");
 
-        // 2. FORMULARIO DE LOGIN (Esto es lo que faltaba para poder entrar)
-        LoginForm loginForm = new LoginForm();
-        loginForm.setAction("login"); // Esto conecta con Spring Security automáticamente
+        // --- CONTENEDOR CON COLORES A JUEGO ---
+        Div loginContainer = new Div();
+        loginContainer.getStyle()
+                .set("background", "rgba(10, 20, 35, 0.8)") // Azul muy oscuro profundo (como el lado derecho de la imagen)
+                .set("backdrop-filter", "blur(12px)")      // Efecto cristal
+                .set("padding", "40px")
+                .set("border-radius", "25px")
+                .set("border", "2px solid #00d4ff")        // Borde azul neón (como los libros de la derecha)
+                .set("box-shadow", "0 0 20px rgba(0, 212, 255, 0.3)"); // Resplandor azul suave
 
-        // 3. Añadimos todo al centro de la pantalla
-        add(VaadinIcon.BOOK.create(), logo, loginForm);
+        // Personalizar textos y colores del botón
+        LoginI18n i18n = LoginI18n.createDefault();
+        i18n.getForm().setTitle("BIBLIOTECA PERSONAL");
+        i18n.getForm().setUsername("Usuario");
+        i18n.getForm().setPassword("Contraseña");
+        i18n.getForm().setSubmit("Entrar");
+        login.setI18n(i18n);
 
-        // Opcional: Un botón para volver si te pierdes
-        Button backBtn = new Button("Ir a inicio", e -> UI.getCurrent().navigate(""));
-        backBtn.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-        add(backBtn);
+        // --- ESTILOS ESPECÍFICOS PARA EL FORMULARIO ---
+        // Usamos CSS para que los textos sean blancos y el botón sea ocre/dorado (como los libros de la izquierda)
+        login.getElement().getStyle().set("color", "white");
+
+        // Inyectamos el estilo del botón dorado/ocre para que combine con la madera y libros antiguos
+        login.getElement().executeJs(
+                "this.shadowRoot.querySelector('vaadin-button').style.background = 'linear-gradient(45deg, #c2913e, #f1c40f)';" +
+                        "this.shadowRoot.querySelector('vaadin-button').style.color = '#000';" +
+                        "this.shadowRoot.querySelector('vaadin-button').style.fontWeight = 'bold';" +
+                        "this.shadowRoot.querySelectorAll('vaadin-text-field, vaadin-password-field').forEach(f => {" +
+                        "  f.style.color = 'white';" +
+                        "});"
+        );
+
+        login.setAction("login");
+
+        loginContainer.add(login);
+        add(loginContainer);
+    }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        if (event.getLocation().getQueryParameters().getParameters().containsKey("error")) {
+            login.setError(true);
+        }
     }
 }
