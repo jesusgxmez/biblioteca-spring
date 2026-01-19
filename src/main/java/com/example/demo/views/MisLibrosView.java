@@ -1,114 +1,90 @@
 package com.example.demo.views;
 
-import com.example.demo.entities.CategoriaEsquema;
-import com.example.demo.entities.LibroEsquema;
-import com.example.demo.entities.UsuarioEsquema;
+import com.example.demo.entities.*;
+import com.example.demo.services.*;
 import com.example.demo.security.SecurityService;
-import com.example.demo.services.CategoriaEsquemaService;
-import com.example.demo.services.LibroEsquemaService;
-import com.example.demo.services.UsuarioEsquemaService;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.button.*;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.*;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
-
 import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Collectors;
 
-@Route(value = "mis-libros")
+@Route(value = "mis-libros", layout = MainLayout.class)
 @PermitAll
 public class MisLibrosView extends VerticalLayout {
 
     private final LibroEsquemaService libroService;
+    private final UsuarioEsquemaService usuarioService;
     private final String username;
     private final Grid<LibroEsquema> grid = new Grid<>(LibroEsquema.class, false);
 
-    public MisLibrosView(LibroEsquemaService libroService,
-                         UsuarioEsquemaService usuarioService,
-                         CategoriaEsquemaService categoriaService,
-                         SecurityService securityService) {
-
+    public MisLibrosView(LibroEsquemaService libroService, UsuarioEsquemaService usuarioService,
+                         CategoriaEsquemaService categoriaService, SecurityService securityService) {
         this.libroService = libroService;
+        this.usuarioService = usuarioService;
         this.username = securityService.getAuthenticatedUsername();
 
-        setPadding(true);
-        add(new H2("Mis Libros (" + username + ")"));
+        // FORMULARIO DE AÑADIR (ARRIBA)
+        TextField t = new TextField("Título");
+        TextField a = new TextField("Autor");
+        ComboBox<CategoriaEsquema> cat = new ComboBox<>("Categoría");
+        cat.setItems(categoriaService.findAll());
+        cat.setItemLabelGenerator(CategoriaEsquema::getCategoria);
 
-        // --- FORMULARIO DE ENTRADA ---
-        TextField titulo = new TextField("Título");
-        TextField autor = new TextField("Autor");
-        ComboBox<CategoriaEsquema> catCombo = new ComboBox<>("Categoría");
-        catCombo.setItems(categoriaService.findAll());
-        catCombo.setItemLabelGenerator(CategoriaEsquema::getCategoria);
-
-        Button añadir = new Button("Añadir Libro", e -> {
-            // Usamos buscarPorNombre que devuelve List<UsuarioEsquema>
-            List<UsuarioEsquema> usuarios = usuarioService.buscarPorNombre(username);
-
-            if (usuarios.isEmpty()) {
-                Notification.show("Error: No existe el usuario '" + username + "' en la base de datos.");
+        Button saveBtn = new Button("Añadir Libro", VaadinIcon.PLUS.create(), e -> {
+            if(t.isEmpty() || a.isEmpty()) {
+                Notification.show("Título y Autor obligatorios");
                 return;
             }
-
-            UsuarioEsquema dueño = usuarios.get(0);
-
+            UsuarioEsquema yo = usuarioService.buscarPorNombre(username).get(0);
             LibroEsquema nuevo = new LibroEsquema();
-            nuevo.setTitulo(titulo.getValue());
-            nuevo.setAutor(autor.getValue());
-            nuevo.setUsuario(dueño); // 1:N
-
-            // Inicializamos ArrayList para evitar fallos en N:M
+            nuevo.setTitulo(t.getValue());
+            nuevo.setAutor(a.getValue());
+            nuevo.setUsuario(yo);
             nuevo.setCategorias(new ArrayList<>());
-            if(catCombo.getValue() != null) {
-                nuevo.getCategorias().add(catCombo.getValue());
-            }
+            if(cat.getValue() != null) nuevo.getCategorias().add(cat.getValue());
 
             libroService.save(nuevo);
-            actualizarGrid();
-            titulo.clear();
-            autor.clear();
-            Notification.show("Libro guardado");
+            actualizarLista();
+            t.clear(); a.clear(); cat.clear();
+            Notification.show("¡Libro guardado!");
         });
+        saveBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-        add(new HorizontalLayout(titulo, autor, catCombo, añadir));
+        HorizontalLayout formulario = new HorizontalLayout(t, a, cat, saveBtn);
+        formulario.setVerticalComponentAlignment(Alignment.BASELINE, saveBtn);
 
-        // --- CONFIGURACIÓN DEL GRID ---
-        grid.addColumn(LibroEsquema::getTitulo).setHeader("Título");
-        grid.addColumn(LibroEsquema::getAutor).setHeader("Autor");
-
-        // Columna N:M (Categorías)
-        grid.addColumn(l -> l.getCategorias() == null ? "" :
-                l.getCategorias().stream()
+        // CONFIGURACIÓN DEL GRID
+        grid.addColumn(LibroEsquema::getTitulo).setHeader("Título").setSortable(true);
+        grid.addColumn(LibroEsquema::getAutor).setHeader("Autor").setSortable(true);
+        grid.addColumn(l -> l.getCategorias().stream()
                         .map(CategoriaEsquema::getCategoria)
-                        .collect(Collectors.joining(", "))).setHeader("Categorías");
+                        .collect(Collectors.joining(", ")))
+                .setHeader("Género");
 
-        // Columna de Acción (Borrar)
         grid.addComponentColumn(libro -> {
-            Button btnBorrar = new Button("Borrar", e -> {
+            Button btnDel = new Button(VaadinIcon.TRASH.create(), e -> {
                 libroService.delete(libro.getId());
-                actualizarGrid();
-                Notification.show("Libro eliminado");
+                actualizarLista();
             });
-            btnBorrar.addThemeVariants(ButtonVariant.LUMO_ERROR);
-            return btnBorrar;
-        }).setHeader("Acciones");
+            btnDel.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY);
+            return btnDel;
+        }).setHeader("Eliminar");
 
-        add(grid);
-        actualizarGrid();
+        add(new H2("Mi Colección Personal"), formulario, grid);
+        actualizarLista();
     }
 
-    private void actualizarGrid() {
-        // Filtramos por el nombre del usuario logueado
+    private void actualizarLista() {
         grid.setItems(libroService.findAll().stream()
                 .filter(l -> l.getUsuario() != null && l.getUsuario().getNombre().equalsIgnoreCase(username))
-                .collect(Collectors.toList()));
+                .toList());
     }
 }

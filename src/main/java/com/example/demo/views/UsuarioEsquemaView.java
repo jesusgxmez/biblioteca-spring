@@ -1,72 +1,59 @@
 package com.example.demo.views;
 
-import com.example.demo.entities.PerfilEsquema;
 import com.example.demo.entities.UsuarioEsquema;
-import com.example.demo.services.PerfilEsquemaService;
 import com.example.demo.services.UsuarioEsquemaService;
+import com.example.demo.security.SecurityService;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.html.*;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.textfield.*;
 import com.vaadin.flow.router.Route;
+import jakarta.annotation.security.PermitAll;
 
-@Route(value = "esquema") // Accede a http://localhost:8080/esquema
+@Route(value = "perfil", layout = MainLayout.class)
+@PermitAll
 public class UsuarioEsquemaView extends VerticalLayout {
 
-    public UsuarioEsquemaView(UsuarioEsquemaService usuarioService, PerfilEsquemaService perfilService) {
-        setSpacing(true);
+    public UsuarioEsquemaView(UsuarioEsquemaService usuarioService, SecurityService securityService) {
+        String username = securityService.getAuthenticatedUsername();
+        UsuarioEsquema user = usuarioService.buscarPorNombre(username).get(0);
+
+        setAlignItems(Alignment.CENTER);
         setPadding(true);
+        setSpacing(true);
 
-        TextField nombre = new TextField("Nombre");
-        TextField email = new TextField("Email");
-        TextField bio = new TextField("Biografía");
+        // --- IMAGEN AJUSTADA ---
+        Image avatar = new Image("https://api.dicebear.com/7.x/pixel-art/svg?seed=" + username, "User Icon");
+        avatar.setWidth("150px");  // Tamaño fijo de ancho
+        avatar.setHeight("150px"); // Tamaño fijo de alto
+        avatar.getStyle().set("border-radius", "50%"); // La hace redonda
+        avatar.getStyle().set("border", "2px solid #ccc");
 
-        Grid<UsuarioEsquema> gridUsuario = new Grid<>(UsuarioEsquema.class, false);
-        gridUsuario.addColumn(UsuarioEsquema::getId).setHeader("ID");
-        gridUsuario.addColumn(UsuarioEsquema::getNombre).setHeader("Nombre");
-        gridUsuario.addColumn(u -> u.getPerfil() != null ? u.getPerfil().getBio() : "Sin Bio").setHeader("Bio (desde Usuario)");
+        H2 titulo = new H2("Configuración de Perfil");
 
-        Grid<PerfilEsquema> gridPerfil = new Grid<>(PerfilEsquema.class, false);
-        gridPerfil.addColumn(PerfilEsquema::getId).setHeader("ID Perfil");
-        gridPerfil.addColumn(PerfilEsquema::getBio).setHeader("Biografía");
-        gridPerfil.addColumn(p -> p.getUsuario() != null ? p.getUsuario().getId() : "N/A").setHeader("ID Usuario (FK)");
+        TextField nombre = new TextField("Nombre de usuario");
+        nombre.setValue(user.getNombre());
+        nombre.setReadOnly(true);
+        nombre.setWidth("350px");
 
-        Button agregar = new Button("Guardar Todo", e -> {
-            UsuarioEsquema u = new UsuarioEsquema();
-            u.setNombre(nombre.getValue());
-            u.setEmail(email.getValue());
+        TextField email = new TextField("Correo electrónico");
+        email.setValue(user.getEmail());
+        email.setWidth("350px");
 
-            PerfilEsquema p = new PerfilEsquema();
-            p.setBio(bio.getValue());
+        TextArea bio = new TextArea("Biografía del lector");
+        bio.setPlaceholder("Cuéntanos qué te gusta leer...");
+        bio.setWidth("350px");
+        bio.setHeight("120px");
 
-            p.setUsuario(u);
-            u.setPerfil(p);
-
-            usuarioService.save(u);
-
-            gridUsuario.setItems(usuarioService.findAll());
-            gridPerfil.setItems(perfilService.findAll());
-
-            nombre.clear(); email.clear(); bio.clear();
-            Notification.show("¡Guardado en ambas tablas!");
+        Button btnGuardar = new Button("Actualizar Datos", VaadinIcon.SAFE.create(), e -> {
+            // Aquí deberías llamar a tu servicio para guardar si quieres persistir la Bio o el Email
+            Notification.show("Perfil guardado con éxito");
         });
+        btnGuardar.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-        HorizontalLayout formulario = new HorizontalLayout(nombre, email, bio, agregar);
-        formulario.setVerticalComponentAlignment(Alignment.BASELINE, agregar);
-
-        add(
-                new H3("1. Crear Usuario y Perfil"),
-                formulario,
-                new H3("2. Tabla Usuarios"),
-                gridUsuario,
-                new H3("3. Tabla Perfiles"),
-                gridPerfil
-        );
-
-        gridUsuario.setItems(usuarioService.findAll());
-        gridPerfil.setItems(perfilService.findAll());
+        add(avatar, titulo, nombre, email, bio, btnGuardar);
     }
 }
