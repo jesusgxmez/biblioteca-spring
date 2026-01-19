@@ -23,22 +23,19 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         setAlignItems(Alignment.CENTER);
         setJustifyContentMode(JustifyContentMode.CENTER);
 
-        // --- TU FONDO (SIN TOCAR) ---
         getStyle().set("background-image", "url('https://img2.wallspic.com/previews/2/2/1/5/3/135122/135122-estantes_de_libros_de_madera_marron_con_luces_encendidas_en_la_habitacion-x750.jpg')");
         getStyle().set("background-size", "cover");
         getStyle().set("background-position", "center");
 
-        // --- CONTENEDOR CON COLORES A JUEGO ---
         Div loginContainer = new Div();
         loginContainer.getStyle()
-                .set("background", "rgba(10, 20, 35, 0.8)") // Azul muy oscuro profundo (como el lado derecho de la imagen)
-                .set("backdrop-filter", "blur(12px)")      // Efecto cristal
+                .set("background", "rgba(10, 20, 35, 0.8)")
+                .set("backdrop-filter", "blur(12px)")
                 .set("padding", "40px")
                 .set("border-radius", "25px")
-                .set("border", "2px solid #00d4ff")        // Borde azul neón (como los libros de la derecha)
-                .set("box-shadow", "0 0 20px rgba(0, 212, 255, 0.3)"); // Resplandor azul suave
+                .set("border", "2px solid #00d4ff")
+                .set("box-shadow", "0 0 20px rgba(0, 212, 255, 0.3)");
 
-        // Personalizar textos y colores del botón
         LoginI18n i18n = LoginI18n.createDefault();
         i18n.getForm().setTitle("BIBLIOTECA PERSONAL");
         i18n.getForm().setUsername("Usuario");
@@ -46,11 +43,8 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         i18n.getForm().setSubmit("Entrar");
         login.setI18n(i18n);
 
-        // --- ESTILOS ESPECÍFICOS PARA EL FORMULARIO ---
-        // Usamos CSS para que los textos sean blancos y el botón sea ocre/dorado (como los libros de la izquierda)
         login.getElement().getStyle().set("color", "white");
 
-        // Inyectamos el estilo del botón dorado/ocre para que combine con la madera y libros antiguos
         login.getElement().executeJs(
                 "this.shadowRoot.querySelector('vaadin-button').style.background = 'linear-gradient(45deg, #c2913e, #f1c40f)';" +
                         "this.shadowRoot.querySelector('vaadin-button').style.color = '#000';" +

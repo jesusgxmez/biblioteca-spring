@@ -30,11 +30,9 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
-        // --- 1. USUARIOS ---
         crearUsuarioSiNoExiste("jesus", "jesus@example.com", "1234");
         crearUsuarioSiNoExiste("paco", "paco@example.com", "1234");
 
-        // --- 2. CATEGORÍAS ---
         String[] nombresCategorias = {
                 "Novela", "Programación", "Terror", "Ciencia Ficción",
                 "Historia", "Fantasía", "Aventura", "Filosofía", "Superación Personal"
@@ -48,7 +46,6 @@ public class DataInitializer implements CommandLineRunner {
             }
         }
 
-        // --- 3. LIBROS PÚBLICOS (Con Páginas Reales) ---
         if (libroService.findAll().isEmpty()) {
             CategoriaEsquema novela = categoriaService.findByCategoria("Novela").get(0);
             CategoriaEsquema terror = categoriaService.findByCategoria("Terror").get(0);
@@ -115,8 +112,6 @@ public class DataInitializer implements CommandLineRunner {
             crearLibroPublico("Dune", "Frank Herbert",
                     "https://www.estudioenescarlata.com/media/img/portadas/_visd_0001JPG01PBE.jpg", cienciaFiccion, 412);
         }
-
-        System.out.println("¡Base de datos inicializada con éxito!");
     }
 
     private void crearUsuarioSiNoExiste(String nombre, String email, String pass) {
@@ -129,7 +124,6 @@ public class DataInitializer implements CommandLineRunner {
         }
     }
 
-    // MÉTODO MODIFICADO PARA INCLUIR IMAGEN Y PÁGINAS TOTALES
     private void crearLibroPublico(String titulo, String autor, String urlImagen, CategoriaEsquema categoria, Integer paginas) {
         LibroEsquema libro = new LibroEsquema();
         libro.setTitulo(titulo);

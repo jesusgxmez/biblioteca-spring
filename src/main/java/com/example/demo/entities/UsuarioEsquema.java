@@ -15,7 +15,7 @@ public class UsuarioEsquema {
     private Long id;
     private String nombre;
     private String email;
-    private String contraseña; // Arreglado: sin la "r" extra
+    private String contraseña;
 
     @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private PerfilEsquema perfil;
@@ -23,7 +23,6 @@ public class UsuarioEsquema {
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LibroEsquema> libros = new ArrayList<>();
 
-    // Sobrescribimos toString manualmente para evitar recursión infinita con LibroEsquema
     @Override
     public String toString() {
         return "UsuarioEsquema{id=" + id + ", nombre='" + nombre + "'}";

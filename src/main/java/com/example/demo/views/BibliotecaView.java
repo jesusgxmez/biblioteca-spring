@@ -42,7 +42,6 @@ public class BibliotecaView extends VerticalLayout {
         setAlignItems(Alignment.CENTER);
         setPadding(true);
 
-        // --- FILTROS ---
         HorizontalLayout filtros = new HorizontalLayout();
         filtros.setWidthFull();
         filtros.setMaxWidth("1100px");
@@ -62,7 +61,6 @@ public class BibliotecaView extends VerticalLayout {
         filtros.add(buscador, filtroCategoria);
         filtros.expand(buscador);
 
-        // --- CONTENEDOR FLEX (Ajustado para 4 por fila) ---
         contenedorCards.setWidthFull();
         contenedorCards.setMaxWidth("1300px"); // Aumentado para dar aire a las 4 columnas
         contenedorCards.setFlexWrap(FlexLayout.FlexWrap.WRAP);
@@ -103,7 +101,7 @@ public class BibliotecaView extends VerticalLayout {
 
     private VerticalLayout crearCardVerticalGrande(LibroEsquema libro) {
         VerticalLayout card = new VerticalLayout();
-        card.setWidth("250px"); // Ajustado de 280 a 250 para que entren 4
+        card.setWidth("250px");
         card.getStyle()
                 .set("background", "white")
                 .set("border-radius", "20px")
@@ -111,13 +109,11 @@ public class BibliotecaView extends VerticalLayout {
                 .set("padding", "15px")
                 .set("transition", "transform 0.3s ease");
 
-        // Imagen tipo Póster
         Image img = new Image(libro.getImagenUrl(), "Portada");
         img.setWidthFull();
-        img.setHeight("340px"); // Ajustado proporcionalmente
+        img.setHeight("340px");
         img.getStyle().set("object-fit", "cover").set("border-radius", "15px");
 
-        // Información abajo
         Span titulo = new Span(libro.getTitulo());
         titulo.getStyle()
                 .set("font-weight", "bold")
@@ -130,7 +126,6 @@ public class BibliotecaView extends VerticalLayout {
         Span autor = new Span(libro.getAutor());
         autor.getStyle().set("color", "gray").set("font-size", "0.9em");
 
-        // Categorías
         HorizontalLayout listaCategorias = new HorizontalLayout();
         listaCategorias.setJustifyContentMode(JustifyContentMode.CENTER);
         libro.getCategorias().forEach(c -> {

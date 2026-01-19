@@ -36,7 +36,6 @@ public class MisLibrosView extends VerticalLayout {
 
         setAlignItems(Alignment.CENTER);
 
-        // --- FORMULARIO ---
         HorizontalLayout formCard = new HorizontalLayout();
         formCard.setWidthFull();
         formCard.setMaxWidth("1100px");
@@ -70,7 +69,6 @@ public class MisLibrosView extends VerticalLayout {
             l.setImagenUrl(img.getValue().isEmpty() ? "https://via.placeholder.com/150x200?text=Sin+Portada" : img.getValue());
             l.setUsuario(yo);
 
-            // Evitamos nulos en las páginas
             int paginas = pTotales.getValue() != null ? pTotales.getValue().intValue() : 0;
             l.setPaginasTotales(paginas);
             l.setPaginasLeidas(0);
@@ -88,7 +86,6 @@ public class MisLibrosView extends VerticalLayout {
         formCard.add(t, a, img, pTotales, cat, save);
         formCard.setVerticalComponentAlignment(Alignment.BASELINE, save);
 
-        // --- CONTENEDOR FLEX ---
         contenedorCards.setWidthFull();
         contenedorCards.setMaxWidth("1050px");
         contenedorCards.setFlexWrap(FlexLayout.FlexWrap.WRAP);
@@ -101,7 +98,6 @@ public class MisLibrosView extends VerticalLayout {
 
     private void actualizarLista() {
         contenedorCards.removeAll();
-        // Cargamos siempre los datos más frescos del servicio
         libroService.findAll().stream()
                 .filter(l -> l.getUsuario() != null && l.getUsuario().getNombre().equalsIgnoreCase(username))
                 .forEach(libro -> contenedorCards.add(crearTarjetaDobleColumna(libro)));
@@ -132,7 +128,6 @@ public class MisLibrosView extends VerticalLayout {
         Span autor = new Span(libro.getAutor());
         autor.getStyle().set("color", "gray").set("font-size", "0.9em").set("margin-bottom", "10px");
 
-        // --- LÓGICA DE PROGRESO CORREGIDA ---
         int leidas = (libro.getPaginasLeidas() != null) ? libro.getPaginasLeidas() : 0;
         int totales = (libro.getPaginasTotales() != null && libro.getPaginasTotales() > 0) ? libro.getPaginasTotales() : 0;
 
@@ -140,14 +135,12 @@ public class MisLibrosView extends VerticalLayout {
         if (totales > 0) {
             double percent = (double) leidas / totales;
             barraProgreso.setValue(Math.min(percent, 1.0));
-            // Si está terminado, lo ponemos en verde
             if (percent >= 1.0) barraProgreso.addThemeVariants(ProgressBarVariant.LUMO_SUCCESS);
         } else {
             barraProgreso.setValue(0);
         }
         barraProgreso.getStyle().set("margin-bottom", "10px");
 
-        // Inputs de actualización
         NumberField inputLeidas = new NumberField();
         inputLeidas.setValue((double) leidas);
         inputLeidas.setWidth("80px");
@@ -159,7 +152,6 @@ public class MisLibrosView extends VerticalLayout {
         Button btnUpdate = new Button(VaadinIcon.CHECK.create(), e -> {
             if (inputLeidas.getValue() != null) {
                 int nuevaLeida = inputLeidas.getValue().intValue();
-                // No permitir más páginas leidas que las totales
                 if (totales > 0 && nuevaLeida > totales) nuevaLeida = totales;
 
                 libro.setPaginasLeidas(nuevaLeida);

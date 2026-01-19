@@ -28,7 +28,6 @@ public class UsuarioEsquemaView extends VerticalLayout {
         setPadding(true);
         setSpacing(true);
 
-        // --- DISEÑO AVATAR ---
         Image avatar = new Image("https://api.dicebear.com/7.x/avataaars/svg?seed=" + username, "User Icon");
         avatar.setWidth("150px");
         avatar.setHeight("150px");
@@ -36,7 +35,6 @@ public class UsuarioEsquemaView extends VerticalLayout {
 
         H2 titulo = new H2("Mi Perfil de Lector");
 
-        // --- CAMPOS ---
         TextField nombre = new TextField("Nombre de usuario");
         nombre.setValue(user.getNombre());
         nombre.setReadOnly(true);
@@ -48,7 +46,6 @@ public class UsuarioEsquemaView extends VerticalLayout {
 
         TextArea bioArea = new TextArea("Biografía");
 
-        // RELACIÓN: Sacamos la bio del perfil vinculado
         if (user.getPerfil() != null) {
             bioArea.setValue(user.getPerfil().getBio() != null ? user.getPerfil().getBio() : "");
         } else {
@@ -58,13 +55,10 @@ public class UsuarioEsquemaView extends VerticalLayout {
         bioArea.setWidth("350px");
         bioArea.setHeight("150px");
 
-        // --- BOTÓN GUARDAR CON LÓGICA DE RELACIÓN ---
         Button btnGuardar = new Button("Guardar Cambios", VaadinIcon.CHECK_CIRCLE.create(), e -> {
             try {
-                // 1. Actualizamos el email del usuario
                 user.setEmail(email.getValue());
 
-                // 2. Manejamos la relación OneToOne con el Perfil
                 PerfilEsquema perfil = user.getPerfil();
                 if (perfil == null) {
                     perfil = new PerfilEsquema();
@@ -73,7 +67,6 @@ public class UsuarioEsquemaView extends VerticalLayout {
                 }
                 perfil.setBio(bioArea.getValue());
 
-                // 3. Persistimos (el CascadeType.ALL en el Usuario debería guardar el perfil)
                 usuarioService.save(user);
 
                 Notification.show("¡Perfil actualizado correctamente!");

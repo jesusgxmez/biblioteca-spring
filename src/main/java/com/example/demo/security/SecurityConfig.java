@@ -17,7 +17,6 @@ public class SecurityConfig extends VaadinWebSecurity {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        // Permitimos el acceso a los recursos públicos (estilos, imágenes)
         http.authorizeHttpRequests(auth -> auth.requestMatchers("/images/*.png").permitAll());
         super.configure(http);
         setLoginView(http, LoginView.class);
@@ -25,7 +24,6 @@ public class SecurityConfig extends VaadinWebSecurity {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        // Usuarios de prueba (Asegúrate de crearlos luego en la tabla de Usuarios para que el filtro funcione)
         UserDetails user = User.withUsername("jesus")
                 .password("{noop}1234")
                 .roles("USER")

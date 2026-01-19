@@ -16,7 +16,6 @@ public class LibroEsquema {
     private String titulo;
     private String autor;
     private String imagenUrl;
-    // Dentro de la clase LibroEsquema
     private Integer paginasTotales = 0;
     private Integer paginasLeidas = 0;
 

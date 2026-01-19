@@ -11,15 +11,13 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
 public class MainLayout extends AppLayout {
     public MainLayout() {
-        // Logo con la fuente estándar y el color azul neón del login
         H1 logo = new H1("READER APP");
         logo.getStyle()
                 .set("font-size", "1.5em")
                 .set("margin", "0 20px")
-                .set("color", "#00d4ff") // El azul neón del borde del login
+                .set("color", "#00d4ff")
                 .set("font-weight", "bold");
 
-        // Botones del menú
         Button b1 = createMenuButton("Catálogo", VaadinIcon.SEARCH, BibliotecaView.class);
         Button b2 = createMenuButton("Mis Libros", VaadinIcon.BOOK, MisLibrosView.class);
         Button b3 = createMenuButton("Perfil", VaadinIcon.USER, UsuarioEsquemaView.class);
@@ -36,7 +34,6 @@ public class MainLayout extends AppLayout {
         header.setWidthFull();
         header.setPadding(true);
 
-        // Header oscuro para que resalte el azul neón, igual que el fondo del login
         header.getStyle()
                 .set("background-color", "#0a1423") // El azul oscuro profundo del login
                 .set("box-shadow", "0 2px 10px rgba(0, 212, 255, 0.2)")
@@ -52,7 +49,6 @@ public class MainLayout extends AppLayout {
                 .set("color", "white")
                 .set("font-weight", "600");
 
-        // Efecto al pasar el ratón para que brille en azul
         btn.getElement().addEventListener("mouseenter", e -> btn.getStyle().set("color", "#00d4ff"));
         btn.getElement().addEventListener("mouseleave", e -> btn.getStyle().set("color", "white"));
 
