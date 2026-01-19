@@ -26,7 +26,7 @@ public class UsuarioEsquemaView extends VerticalLayout {
         setSpacing(true);
 
         // --- IMAGEN AJUSTADA ---
-        Image avatar = new Image("https://api.dicebear.com/7.x/pixel-art/svg?seed=" + username, "User Icon");
+        Image avatar = new Image("https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" + username, "User Icon");
         avatar.setWidth("150px");  // Tamaño fijo de ancho
         avatar.setHeight("150px"); // Tamaño fijo de alto
         avatar.getStyle().set("border-radius", "50%"); // La hace redonda

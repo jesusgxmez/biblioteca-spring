@@ -11,6 +11,6 @@ import java.util.List;
 public interface LibroEsquemaRepository extends JpaRepository<LibroEsquema, Long> {
     List<LibroEsquema> findByTitulo(String titulo);
     List<LibroEsquema> findByAutor(String autor);
-    List<LibroEsquema> findByEditora(String editora);
+    List<LibroEsquema> findByImagenUrl(String imagenUrl);
     List<LibroEsquema> findByUsuarioEmail(String email);
 }

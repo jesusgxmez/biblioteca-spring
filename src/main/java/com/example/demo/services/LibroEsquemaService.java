@@ -46,8 +46,8 @@ public class LibroEsquemaService {
         return repo.findByAutor(autor);
     }
 
-    public List<LibroEsquema> buscarPorEditora(String editora) {
-        return repo.findByEditora(editora);
+    public List<LibroEsquema> buscarPorImagenUrl(String imagenUrl) {
+        return repo.findByImagenUrl(imagenUrl);
     }
 
     @org.springframework.transaction.annotation.Transactional

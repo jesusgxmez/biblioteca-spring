@@ -15,7 +15,7 @@ public class LibroEsquema {
     private Long id;
     private String titulo;
     private String autor;
-    private String editora;
+    private String imagenUrl;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "usuario_id")
