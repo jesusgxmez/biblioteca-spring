@@ -19,6 +19,9 @@ public class LibroEsquema {
     private Integer paginasTotales = 0;
     private Integer paginasLeidas = 0;
 
+    @Column(length = 2000)
+    private String descripcion;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "usuario_id")
     private UsuarioEsquema usuario;

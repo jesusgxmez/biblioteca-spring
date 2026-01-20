@@ -1,7 +1,9 @@
 package com.example.demo.views;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.login.LoginForm;
 import com.vaadin.flow.component.login.LoginI18n;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -23,18 +25,22 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         setAlignItems(Alignment.CENTER);
         setJustifyContentMode(JustifyContentMode.CENTER);
 
-        getStyle().set("background-image", "url('https://img2.wallspic.com/previews/2/2/1/5/3/135122/135122-estantes_de_libros_de_madera_marron_con_luces_encendidas_en_la_habitacion-x750.jpg')");
+        getStyle().set("background-image", "url('https://images.unsplash.com/photo-1521587760476-6c12a4b040da?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Zm9uZG8lMjBkZSUyMGxhJTIwYmlibGlvdGVjYXxlbnwwfHwwfHx8MA%3D%3D')");
         getStyle().set("background-size", "cover");
         getStyle().set("background-position", "center");
 
         Div loginContainer = new Div();
         loginContainer.getStyle()
-                .set("background", "rgba(10, 20, 35, 0.8)")
-                .set("backdrop-filter", "blur(12px)")
-                .set("padding", "40px")
+                .set("background", "rgba(10, 20, 35, 0.85)")
+                .set("backdrop-filter", "blur(15px)")
+                .set("padding", "30px")
                 .set("border-radius", "25px")
                 .set("border", "2px solid #00d4ff")
-                .set("box-shadow", "0 0 20px rgba(0, 212, 255, 0.3)");
+                .set("box-shadow", "0 0 30px rgba(0, 212, 255, 0.4)")
+                .set("width", "400px")
+                .set("display", "flex")
+                .set("flex-direction", "column")
+                .set("align-items", "center");
 
         LoginI18n i18n = LoginI18n.createDefault();
         i18n.getForm().setTitle("BIBLIOTECA PERSONAL");
@@ -43,20 +49,34 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         i18n.getForm().setSubmit("Entrar");
         login.setI18n(i18n);
 
-        login.getElement().getStyle().set("color", "white");
-
         login.getElement().executeJs(
-                "this.shadowRoot.querySelector('vaadin-button').style.background = 'linear-gradient(45deg, #c2913e, #f1c40f)';" +
-                        "this.shadowRoot.querySelector('vaadin-button').style.color = '#000';" +
-                        "this.shadowRoot.querySelector('vaadin-button').style.fontWeight = 'bold';" +
-                        "this.shadowRoot.querySelectorAll('vaadin-text-field, vaadin-password-field').forEach(f => {" +
-                        "  f.style.color = 'white';" +
-                        "});"
+                "const style = document.createElement('style');" +
+                        "style.textContent = ` " +
+                        "  vaadin-login-form-wrapper { background: transparent !important; padding: 0 !important; } " +
+                        "  [part='form-title'] { color: #00d4ff !important; text-align: center; } " +
+                        "  label { color: #00d4ff !important; } " +
+                        "  vaadin-button[part='submit-button'] { " +
+                        "    background: linear-gradient(45deg, #00d4ff, #0055ff) !important; " +
+                        "    color: white !important; " +
+                        "    font-weight: bold !important; " +
+                        "    margin-top: 20px !important; " +
+                        "    box-shadow: 0 0 10px rgba(0, 212, 255, 0.5); " +
+                        "  } " +
+                        "`; " +
+                        "this.shadowRoot.appendChild(style);"
         );
 
         login.setAction("login");
 
-        loginContainer.add(login);
+        Button btnRegistro = new Button("¿No tienes cuenta? Regístrate aquí", e -> UI.getCurrent().navigate("registro"));
+        btnRegistro.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+        btnRegistro.getStyle()
+                .set("color", "#00d4ff")
+                .set("font-size", "14px")
+                .set("margin-top", "10px")
+                .set("cursor", "pointer");
+
+        loginContainer.add(login, btnRegistro);
         add(loginContainer);
     }
 

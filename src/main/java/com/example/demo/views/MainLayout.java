@@ -1,5 +1,6 @@
 package com.example.demo.views;
 
+import com.example.demo.security.SecurityService;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
@@ -10,8 +11,13 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
 public class MainLayout extends AppLayout {
-    public MainLayout() {
-        H1 logo = new H1("READER APP");
+
+    private final SecurityService securityService;
+
+    public MainLayout(SecurityService securityService) {
+        this.securityService = securityService;
+
+        H1 logo = new H1("BIBLIOTECA PERSONAL");
         logo.getStyle()
                 .set("font-size", "1.5em")
                 .set("margin", "0 20px")
@@ -22,7 +28,7 @@ public class MainLayout extends AppLayout {
         Button b2 = createMenuButton("Mis Libros", VaadinIcon.BOOK, MisLibrosView.class);
         Button b3 = createMenuButton("Perfil", VaadinIcon.USER, UsuarioEsquemaView.class);
 
-        Button logout = new Button("Salir", VaadinIcon.EXIT.create(), e -> UI.getCurrent().getPage().setLocation("/logout"));
+        Button logout = new Button("Salir", VaadinIcon.EXIT.create(), e -> securityService.logout());
         logout.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_ERROR);
 
         HorizontalLayout menu = new HorizontalLayout(b1, b2, b3);
@@ -35,9 +41,9 @@ public class MainLayout extends AppLayout {
         header.setPadding(true);
 
         header.getStyle()
-                .set("background-color", "#0a1423") // El azul oscuro profundo del login
+                .set("background-color", "#0a1423")
                 .set("box-shadow", "0 2px 10px rgba(0, 212, 255, 0.2)")
-                .set("border-bottom", "1px solid #00d4ff"); // Línea neón sutil
+                .set("border-bottom", "1px solid #00d4ff");
 
         addToNavbar(header);
     }
