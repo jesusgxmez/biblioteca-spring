@@ -17,10 +17,9 @@ public class LibroEsquemaService {
         this.repo = repo;
     }
 
-    @Transactional(readOnly = true) // Esto mantiene la sesión abierta hasta que el Grid recibe los datos
+    @Transactional(readOnly = true)
     public List<LibroEsquema> findAll() {
         List<LibroEsquema> libros = repo.findAll();
-        // Forzamos la carga de las categorías antes de salir del método
         libros.forEach(l -> l.getCategorias().size());
         return libros;
     }

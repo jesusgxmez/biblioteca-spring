@@ -19,7 +19,7 @@ public class DataInitializer implements CommandLineRunner {
     private final UsuarioEsquemaService usuarioService;
     private final CategoriaEsquemaService categoriaService;
     private final LibroEsquemaService libroService;
-    private final PasswordEncoder passwordEncoder; // <--- INYECTADO
+    private final PasswordEncoder passwordEncoder;
 
     public DataInitializer(UsuarioEsquemaService usuarioService,
                            CategoriaEsquemaService categoriaService,
@@ -34,8 +34,7 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
-        crearUsuarioSiNoExiste("jesus", "jesus@example.com", "1234");
-        crearUsuarioSiNoExiste("paco", "paco@example.com", "1234");
+        crearUsuarioSiNoExiste("test", "test@example.com", "test");
 
         String[] nombresCategorias = {
                 "Novela", "Programación", "Terror", "Ciencia Ficción",
@@ -56,6 +55,9 @@ public class DataInitializer implements CommandLineRunner {
             CategoriaEsquema cienciaFiccion = categoriaService.findByCategoria("Ciencia Ficción").get(0);
             CategoriaEsquema prog = categoriaService.findByCategoria("Programación").get(0);
             CategoriaEsquema fantasia = categoriaService.findByCategoria("Fantasía").get(0);
+            CategoriaEsquema historia = categoriaService.findByCategoria("Historia").get(0);
+            CategoriaEsquema aventura = categoriaService.findByCategoria("Aventura").get(0);
+            CategoriaEsquema filosofia = categoriaService.findByCategoria("Filosofía").get(0);
             CategoriaEsquema superacionPersonal = categoriaService.findByCategoria("Superación Personal").get(0);
 
             crearLibroPublico("Don Quijote de la Mancha", "Miguel de Cervantes",
@@ -133,6 +135,7 @@ public class DataInitializer implements CommandLineRunner {
             crearLibroPublico("Dune", "Frank Herbert",
                     "https://www.estudioenescarlata.com/media/img/portadas/_visd_0001JPG01PBE.jpg", cienciaFiccion, 412,
                     "En un futuro lejano, Paul Atreides viaja al planeta desértico Arrakis para asegurar el suministro de la especia, la sustancia más importante del universo galáctico.");
+
         }
     }
 
@@ -141,7 +144,7 @@ public class DataInitializer implements CommandLineRunner {
             UsuarioEsquema u = new UsuarioEsquema();
             u.setNombre(nombre);
             u.setEmail(email);
-            u.setContraseña(passwordEncoder.encode(pass)); // <--- CIFRADO
+            u.setContraseña(passwordEncoder.encode(pass));
             usuarioService.save(u);
         }
     }
