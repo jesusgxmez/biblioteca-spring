@@ -222,31 +222,20 @@ mvn test
 - **Catálogo**: Los usuarios pueden asignarse libros del catálogo
 ---
 
-## 👨‍💻 Autor
-
-- GitHub: [@jesusgxmez](https://github.com/jesusgxmez)
----
-
-
 ## 📸 Capturas de Pantalla
 
 ### Página de Login
-![Login]
 <img width="1919" height="936" alt="login" src="https://github.com/user-attachments/assets/34da1473-4f22-414d-925f-c637e67052fe" />
 
 ### Catálogo Principal
-![Catálogo]
 <img width="1917" height="942" alt="catalogo" src="https://github.com/user-attachments/assets/a579333b-1a26-470d-bbd9-3f9cdc5f8177" />
 
 ### Mis Libros
-![Mis Libros]
 <img width="1919" height="944" alt="mislibros" src="https://github.com/user-attachments/assets/7f9012f5-6428-4552-9766-12c6c57836bd" />
 
 
 ---
+## 👨‍💻 Autor
 
-
-<div align="center">
-  
-  
-</div>
+- GitHub: [@jesusgxmez](https://github.com/jesusgxmez)
+---
