@@ -8,6 +8,12 @@
 
 **Biblioteca Personal** es una aplicación web moderna de gestión de biblioteca digital desarrollada con Spring Boot y Vaadin. Permite a los usuarios explorar, gestionar y organizar libros de diferentes categorías de forma intuitiva y segura.
 
+![Documentation](https://img.shields.io/badge/Documentación-8A2BE2)
+```bash
+https://deepwiki.com/jesusgxmez/biblioteca-spring/1-overview
+```
+
+
 ---
 
 ## ✨ Características Principales
